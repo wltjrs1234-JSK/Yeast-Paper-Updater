@@ -5,9 +5,9 @@
 **Europe PMC API**를 사용하여 PubMed뿐만 아니라 bioRxiv 등의 프리프린트 서버도 함께 검색합니다.
 
 ## 검색 카테고리
-1. **Glutathione**: 효모 및 글루타티온 관련 최신 논문
-2. **NMN**: 효모 및 NMN(Nicotinamide mononucleotide) 관련 논문
-3. **Gene Editing Tools**: 효모 및 유전자 편집 기술(CRISPR, TALEN 등) 관련 논문
+1. **Glutathione & GSH**: 효모 및 글루타티온(Glutathione), GSH 관련 논문
+2. **NAD+ & Precursors**: 효모 및 NAD 대사 전구체(NMN, NR, NAD, NAM 등) 관련 논문
+3. **Gene Editing**: 효모 및 유전자 편집 기술(CRISPR, CRISPR/Cas9, TALEN 등) 관련 논문
 
 ## 설정 및 실행 방법 (GitHub Actions 기반)
 

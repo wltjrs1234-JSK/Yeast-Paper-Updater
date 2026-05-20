@@ -11,9 +11,9 @@ EPMC_API_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
 # Categories and their specific queries
 CATEGORIES = {
-    "Glutathione": '("Saccharomyces cerevisiae" OR "baker\'s yeast") AND "glutathione"',
-    "NMN": '("Saccharomyces cerevisiae" OR "baker\'s yeast") AND ("NMN" OR "Nicotinamide mononucleotide")',
-    "Gene Editing Tools": '("Saccharomyces cerevisiae" OR "baker\'s yeast") AND ("gene editing" OR "CRISPR" OR "TALEN" OR "ZFN" OR "Cas9")'
+    "Glutathione & GSH": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("glutathione" OR "GSH")',
+    "NAD+ & Precursors (NMN, NR, NAD, NAM)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("NMN" OR "Nicotinamide mononucleotide" OR "NR" OR "Nicotinamide riboside" OR "NAD" OR "NAD+" OR "NADH" OR "Nicotinamide adenine dinucleotide" OR "NAM" OR "Nicotinamide")',
+    "Gene Editing (CRISPR, Cas9)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("gene editing" OR "CRISPR" OR "CRISPR/Cas9" OR "Cas9" OR "TALEN" OR "ZFN")'
 }
 
 def fetch_recent_papers(query, days=7):
