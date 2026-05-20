@@ -5,6 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import sys
+from deep_translator import GoogleTranslator
 
 # Europe PMC API endpoint
 EPMC_API_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
@@ -51,55 +52,94 @@ def format_html_email(results_by_category):
     <html>
     <head>
         <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+            body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 0 auto; padding: 20px; }
             h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
             h2 { color: #2980b9; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-            .paper { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #3498db; }
-            .title { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
-            .authors { font-size: 14px; color: #7f8c8d; margin-bottom: 10px; font-style: italic; }
-            .journal { font-size: 14px; font-weight: bold; color: #e67e22; }
-            .abstract { font-size: 14px; margin-bottom: 15px; text-align: justify; }
-            .link-btn { display: inline-block; background: #3498db; color: #fff; text-decoration: none; padding: 8px 15px; border-radius: 3px; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            th { background-color: #f4f6f7; color: #2c3e50; text-align: left; padding: 12px; border: 1px solid #ddd; font-weight: bold; }
+            td { padding: 12px; border: 1px solid #ddd; vertical-align: top; }
+            .title { font-size: 15px; font-weight: bold; color: #2c3e50; }
+            .authors { font-size: 13px; color: #7f8c8d; margin-top: 5px; }
+            .abstract { font-size: 14px; text-align: justify; line-height: 1.5; }
+            .date { font-size: 13px; color: #e67e22; font-weight: bold; white-space: nowrap; }
+            .link-btn { display: inline-block; background: #3498db; color: #fff; text-decoration: none; padding: 6px 10px; border-radius: 3px; font-size: 12px; margin-top: 10px; }
             .link-btn:hover { background: #2980b9; }
             .no-papers { color: #7f8c8d; font-style: italic; }
         </style>
     </head>
     <body>
         <h1>🧬 S. cerevisiae Weekly Literature Update</h1>
-        <p>Here are the latest papers and preprints regarding S. cerevisiae, categorized by your topics of interest. Collected over the last 30 days.</p>
+        <p>최근 30일 동안 새롭게 등록된 효모 관련 논문들을 요약한 리포트입니다.</p>
     """
     
     total_papers = 0
     for category, papers in results_by_category.items():
         html += f"<h2>📌 {category}</h2>"
         if not papers:
-            html += "<p class='no-papers'>No new papers found for this category today.</p>"
+            html += "<p class='no-papers'>이번 기간에는 해당 카테고리에 새로운 논문이 없습니다.</p>"
             continue
+            
+        html += """
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">논문제목 (영어)</th>
+                    <th style="width: 60%;">Abstract (한글 요약)</th>
+                    <th style="width: 15%;">발행년도</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
             
         for paper in papers:
             total_papers += 1
             title = paper.get('title', 'No Title Available')
             authors = paper.get('authorString', 'Authors not listed')
-            journal = paper.get('journalTitle', paper.get('bookOrReportDetails', {}).get('publisher', 'Preprint/Unknown Source'))
-            abstract = paper.get('abstractText', 'No abstract available.')
+            abstract_eng = paper.get('abstractText', 'No abstract available.')
             doi = paper.get('doi')
             pmid = paper.get('pmid')
+            pub_date = paper.get('firstPublicationDate', paper.get('pubYear', '알 수 없음'))
+            
+            # Format date (e.g., 2024-05-15 -> 2024년 5월 15일)
+            formatted_date = pub_date
+            if '-' in pub_date and len(pub_date.split('-')) == 3:
+                y, m, d = pub_date.split('-')
+                formatted_date = f"{y}년 {int(m)}월 {int(d)}일"
+            elif '-' in pub_date and len(pub_date.split('-')) == 2:
+                y, m = pub_date.split('-')
+                formatted_date = f"{y}년 {int(m)}월"
+            elif len(pub_date) == 4 and pub_date.isdigit():
+                formatted_date = f"{pub_date}년"
+                
+            # Translate abstract
+            abstract_kor = "요약 정보가 없습니다."
+            if abstract_eng != 'No abstract available.':
+                if len(abstract_eng) > 1000:
+                    abstract_eng = abstract_eng[:1000] + "... (이하 생략)"
+                try:
+                    abstract_kor = GoogleTranslator(source='auto', target='ko').translate(abstract_eng)
+                except Exception as e:
+                    abstract_kor = f"(번역 오류) {abstract_eng}"
             
             link = f"https://doi.org/{doi}" if doi else (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}" if pmid else "#")
             
-            # Truncate abstract if it's too long
-            if len(abstract) > 800:
-                abstract = abstract[:800] + "... (truncated)"
-                
             html += f"""
-            <div class="paper">
-                <div class="title">{title}</div>
-                <div class="authors">{authors}</div>
-                <div class="journal">Source: {journal}</div>
-                <div class="abstract"><strong>Abstract:</strong><br>{abstract}</div>
-                <a href="{link}" class="link-btn" target="_blank">Read Full Paper</a>
-            </div>
+                <tr>
+                    <td>
+                        <div class="title">{title}</div>
+                        <div class="authors">{authors}</div>
+                        <a href="{link}" class="link-btn" target="_blank">원문 보기</a>
+                    </td>
+                    <td>
+                        <div class="abstract">{abstract_kor}</div>
+                    </td>
+                    <td>
+                        <div class="date">{formatted_date}</div>
+                    </td>
+                </tr>
             """
+            
+        html += "</tbody></table>"
             
     html += """
         <br><hr>
