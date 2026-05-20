@@ -68,8 +68,8 @@ def format_html_email(results_by_category):
         </style>
     </head>
     <body>
-        <h1>🧬 S. cerevisiae Weekly Literature Update</h1>
-        <p>최근 30일 동안 새롭게 등록된 효모 관련 논문들을 요약한 리포트입니다.</p>
+        <h1>🧬 S. cerevisiae Monthly Literature Update</h1>
+        <p>지난 한 달(30일) 동안 새롭게 등록된 효모 관련 논문들을 요약한 리포트입니다.</p>
     """
     
     total_papers = 0
@@ -80,12 +80,12 @@ def format_html_email(results_by_category):
             continue
             
         html += """
-        <table>
+        <table border="1" cellpadding="10" style="width: 100%; border-collapse: collapse; margin-top: 15px; border-color: #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
             <thead>
-                <tr>
-                    <th style="width: 25%;">논문제목 (영어)</th>
-                    <th style="width: 60%;">Abstract (한글 요약)</th>
-                    <th style="width: 15%;">발행년도</th>
+                <tr style="background-color: #f4f6f7;">
+                    <th style="width: 25%; color: #2c3e50; text-align: left; padding: 12px; font-weight: bold; border: 1px solid #ccc;">논문제목 (영어)</th>
+                    <th style="width: 60%; color: #2c3e50; text-align: left; padding: 12px; font-weight: bold; border: 1px solid #ccc;">Abstract (핵심 요약)</th>
+                    <th style="width: 15%; color: #2c3e50; text-align: left; padding: 12px; font-weight: bold; border: 1px solid #ccc;">발행년도</th>
                 </tr>
             </thead>
             <tbody>
@@ -111,29 +111,40 @@ def format_html_email(results_by_category):
             elif len(pub_date) == 4 and pub_date.isdigit():
                 formatted_date = f"{pub_date}년"
                 
-            # Translate abstract
+            # Summarize and Translate abstract
             abstract_kor = "요약 정보가 없습니다."
             if abstract_eng != 'No abstract available.':
-                if len(abstract_eng) > 1000:
-                    abstract_eng = abstract_eng[:1000] + "... (이하 생략)"
+                # Extract core sentences (first sentence for background, last 1-2 for conclusion)
+                sentences = [s.strip() for s in abstract_eng.split('. ') if s.strip()]
+                if len(sentences) > 4:
+                    abstract_eng_summary = sentences[0] + ". \n[...중략...] \n" + sentences[-2] + ". " + sentences[-1]
+                    if not abstract_eng_summary.endswith('.'):
+                        abstract_eng_summary += '.'
+                else:
+                    abstract_eng_summary = abstract_eng
+                    
+                if len(abstract_eng_summary) > 800:
+                    abstract_eng_summary = abstract_eng_summary[:800] + "... (이하 생략)"
+                    
                 try:
-                    abstract_kor = GoogleTranslator(source='auto', target='ko').translate(abstract_eng)
+                    abstract_kor = GoogleTranslator(source='auto', target='ko').translate(abstract_eng_summary)
+                    abstract_kor = abstract_kor.replace('[...중략...]', '<br><br><span style="color:#7f8c8d; font-size:12px;">[...중간 내용 생략...]</span><br>')
                 except Exception as e:
-                    abstract_kor = f"(번역 오류) {abstract_eng}"
+                    abstract_kor = f"(번역 오류) {abstract_eng_summary}"
             
             link = f"https://doi.org/{doi}" if doi else (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}" if pmid else "#")
             
             html += f"""
                 <tr>
-                    <td>
+                    <td style="padding: 12px; vertical-align: top; border: 1px solid #ccc;">
                         <div class="title">{title}</div>
                         <div class="authors">{authors}</div>
                         <a href="{link}" class="link-btn" target="_blank">원문 보기</a>
                     </td>
-                    <td>
+                    <td style="padding: 12px; vertical-align: top; border: 1px solid #ccc;">
                         <div class="abstract">{abstract_kor}</div>
                     </td>
-                    <td>
+                    <td style="padding: 12px; vertical-align: top; border: 1px solid #ccc;">
                         <div class="date">{formatted_date}</div>
                     </td>
                 </tr>
@@ -160,7 +171,7 @@ def send_email(html_content, total_papers):
         
     msg = MIMEMultipart("alternative")
     today_str = datetime.datetime.now().strftime('%Y-%m-%d')
-    msg["Subject"] = f"[{today_str}] S. cerevisiae Weekly Literature Update ({total_papers} new)"
+    msg["Subject"] = f"[{today_str}] S. cerevisiae Monthly Literature Update ({total_papers} new)"
     msg["From"] = sender_email
     msg["To"] = receiver_email
     
