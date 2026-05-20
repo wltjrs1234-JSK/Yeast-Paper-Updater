@@ -33,7 +33,7 @@ CATEGORIES = {
     ),
     "NAD+ & Precursors (Production & Strain Improvement)": build_query(
         yeast_kws, 
-        ["NMN", "Nicotinamide mononucleotide", "NR", "Nicotinamide riboside", "NAD", "NAD+", "NADH", "NAM", "Nicotinamide"], 
+        ["NMN", "Nicotinamide mononucleotide", "NR", "Nicotinamide riboside", "NAD", "NAD+", "NADH", "Nicotinamide adenine dinucleotide", "NAM", "Nicotinamide"], 
         prod_kws
     ),
     "Gene Editing (Novel Tools & Methods)": build_query(
