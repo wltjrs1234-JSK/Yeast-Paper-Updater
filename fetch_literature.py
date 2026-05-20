@@ -183,17 +183,21 @@ def format_html_email(results_by_category):
 def send_email(html_content, total_papers):
     sender_email = os.environ.get("EMAIL_SENDER")
     sender_password = os.environ.get("EMAIL_PASSWORD")
-    receiver_email = os.environ.get("EMAIL_RECEIVER")
+    receiver_emails_raw = os.environ.get("EMAIL_RECEIVER")
     
-    if not all([sender_email, sender_password, receiver_email]):
+    if not all([sender_email, sender_password, receiver_emails_raw]):
         print("Email credentials are not set in environment variables.")
         return
+        
+    # 쉼표(,)로 구분된 여러 수신자를 리스트로 변환
+    receivers_list = [email.strip() for email in receiver_emails_raw.split(",") if email.strip()]
         
     msg = MIMEMultipart("alternative")
     today_str = datetime.datetime.now().strftime('%Y-%m-%d')
     msg["Subject"] = f"[{today_str}] S. cerevisiae Monthly Literature Update ({total_papers} new)"
-    msg["From"] = sender_email
-    msg["To"] = receiver_email
+    # 보내는 사람 이름을 JSK로 표시 (실제 발송은 sender_email을 통해 이루어짐)
+    msg["From"] = f"JSK <{sender_email}>"
+    msg["To"] = ", ".join(receivers_list)
     
     part = MIMEText(html_content, "html")
     msg.attach(part)
@@ -202,9 +206,9 @@ def send_email(html_content, total_papers):
         # Using Naver SMTP
         server = smtplib.SMTP_SSL("smtp.naver.com", 465)
         server.login(sender_email, sender_password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        server.sendmail(sender_email, receivers_list, msg.as_string())
         server.quit()
-        print("Email sent successfully!")
+        print(f"Email sent successfully to {len(receivers_list)} recipients!")
     except Exception as e:
         print(f"Failed to send email: {e}")
 
