@@ -16,7 +16,7 @@ CATEGORIES = {
     "Gene Editing (CRISPR, Cas9)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("gene editing" OR "CRISPR" OR "CRISPR/Cas9" OR "Cas9" OR "TALEN" OR "ZFN")'
 }
 
-def fetch_recent_papers(query, days=7):
+def fetch_recent_papers(query, days=30):
     """
     Fetch papers from Europe PMC for a given query over the past `days` days.
     Europe PMC includes PubMed, PMC, bioRxiv, medRxiv, etc.
@@ -66,7 +66,7 @@ def format_html_email(results_by_category):
     </head>
     <body>
         <h1>🧬 S. cerevisiae Weekly Literature Update</h1>
-        <p>Here are the latest papers and preprints regarding S. cerevisiae, categorized by your topics of interest. Collected over the last 7 days.</p>
+        <p>Here are the latest papers and preprints regarding S. cerevisiae, categorized by your topics of interest. Collected over the last 30 days.</p>
     """
     
     total_papers = 0
