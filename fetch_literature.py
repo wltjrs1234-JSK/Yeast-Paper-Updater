@@ -10,11 +10,37 @@ from deep_translator import GoogleTranslator
 # Europe PMC API endpoint
 EPMC_API_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
-# Categories and their specific queries
+def build_query(yeast_terms, target_terms, action_terms):
+    y_str = ' OR '.join([f'"{t}"' for t in yeast_terms])
+    t_str = ' OR '.join([f'"{t}"' for t in target_terms])
+    a_str = ' OR '.join([f'"{t}"' for t in action_terms])
+    
+    y_query = f'(TITLE:({y_str}) OR ABSTRACT:({y_str}))'
+    t_query = f'(TITLE:({t_str}) OR ABSTRACT:({t_str}))'
+    a_query = f'(TITLE:({a_str}) OR ABSTRACT:({a_str}))'
+    
+    return f"{y_query} AND {t_query} AND {a_query}"
+
+yeast_kws = ["Saccharomyces cerevisiae", "baker's yeast", "S. cerevisiae"]
+prod_kws = ["production", "biosynthesis", "metabolic engineering", "strain improvement", "overproduction", "fermentation", "yield", "engineered", "synthetic biology"]
+edit_kws = ["novel", "new", "development", "toolkit", "platform", "improved", "efficient", "method", "system"]
+
 CATEGORIES = {
-    "Glutathione & GSH (Production & Strain Improvement)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("glutathione" OR "GSH") AND ("production" OR "biosynthesis" OR "metabolic engineering" OR "strain improvement" OR "overproduction" OR "fermentation" OR "yield")',
-    "NAD+ & Precursors (Production & Strain Improvement)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("NMN" OR "Nicotinamide mononucleotide" OR "NR" OR "Nicotinamide riboside" OR "NAD" OR "NAD+" OR "NADH" OR "Nicotinamide adenine dinucleotide" OR "NAM" OR "Nicotinamide") AND ("production" OR "biosynthesis" OR "metabolic engineering" OR "strain improvement" OR "overproduction" OR "fermentation" OR "yield")',
-    "Gene Editing (Novel Tools & Methods)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("gene editing" OR "CRISPR" OR "CRISPR/Cas9" OR "Cas9" OR "TALEN" OR "ZFN") AND ("novel" OR "new" OR "development" OR "toolkit" OR "platform" OR "improved" OR "efficient")'
+    "Glutathione & GSH (Production & Strain Improvement)": build_query(
+        yeast_kws, 
+        ["glutathione", "GSH"], 
+        prod_kws
+    ),
+    "NAD+ & Precursors (Production & Strain Improvement)": build_query(
+        yeast_kws, 
+        ["NMN", "Nicotinamide mononucleotide", "NR", "Nicotinamide riboside", "NAD", "NAD+", "NADH", "NAM", "Nicotinamide"], 
+        prod_kws
+    ),
+    "Gene Editing (Novel Tools & Methods)": build_query(
+        yeast_kws, 
+        ["gene editing", "CRISPR", "CRISPR/Cas9", "Cas9", "TALEN", "ZFN", "base editor", "prime editor"], 
+        edit_kws
+    )
 }
 
 def fetch_recent_papers(query, days=30):
