@@ -12,9 +12,9 @@ EPMC_API_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 
 # Categories and their specific queries
 CATEGORIES = {
-    "Glutathione & GSH": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("glutathione" OR "GSH")',
-    "NAD+ & Precursors (NMN, NR, NAD, NAM)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("NMN" OR "Nicotinamide mononucleotide" OR "NR" OR "Nicotinamide riboside" OR "NAD" OR "NAD+" OR "NADH" OR "Nicotinamide adenine dinucleotide" OR "NAM" OR "Nicotinamide")',
-    "Gene Editing (CRISPR, Cas9)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("gene editing" OR "CRISPR" OR "CRISPR/Cas9" OR "Cas9" OR "TALEN" OR "ZFN")'
+    "Glutathione & GSH (Production & Strain Improvement)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("glutathione" OR "GSH") AND ("production" OR "biosynthesis" OR "metabolic engineering" OR "strain improvement" OR "overproduction" OR "fermentation" OR "yield")',
+    "NAD+ & Precursors (Production & Strain Improvement)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("NMN" OR "Nicotinamide mononucleotide" OR "NR" OR "Nicotinamide riboside" OR "NAD" OR "NAD+" OR "NADH" OR "Nicotinamide adenine dinucleotide" OR "NAM" OR "Nicotinamide") AND ("production" OR "biosynthesis" OR "metabolic engineering" OR "strain improvement" OR "overproduction" OR "fermentation" OR "yield")',
+    "Gene Editing (Novel Tools & Methods)": '("Saccharomyces cerevisiae" OR "baker\'s yeast" OR "S. cerevisiae") AND ("gene editing" OR "CRISPR" OR "CRISPR/Cas9" OR "Cas9" OR "TALEN" OR "ZFN") AND ("novel" OR "new" OR "development" OR "toolkit" OR "platform" OR "improved" OR "efficient")'
 }
 
 def fetch_recent_papers(query, days=30):
@@ -114,17 +114,11 @@ def format_html_email(results_by_category):
             # Summarize and Translate abstract
             abstract_kor = "요약 정보가 없습니다."
             if abstract_eng != 'No abstract available.':
-                # Extract core sentences (first sentence for background, last 1-2 for conclusion)
-                sentences = [s.strip() for s in abstract_eng.split('. ') if s.strip()]
-                if len(sentences) > 4:
-                    abstract_eng_summary = sentences[0] + ". \n[...중략...] \n" + sentences[-2] + ". " + sentences[-1]
-                    if not abstract_eng_summary.endswith('.'):
-                        abstract_eng_summary += '.'
+                # Keep first 800 chars and last 600 chars to ensure background and conclusion are included
+                if len(abstract_eng) > 1500:
+                    abstract_eng_summary = abstract_eng[:800] + " [...중략...] " + abstract_eng[-600:]
                 else:
                     abstract_eng_summary = abstract_eng
-                    
-                if len(abstract_eng_summary) > 800:
-                    abstract_eng_summary = abstract_eng_summary[:800] + "... (이하 생략)"
                     
                 try:
                     abstract_kor = GoogleTranslator(source='auto', target='ko').translate(abstract_eng_summary)
