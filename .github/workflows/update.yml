@@ -1,9 +1,9 @@
-name: S. cerevisiae Literature Daily Update
+name: S. cerevisiae Literature Weekly Update
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day (which is 9:00 AM KST)
-    - cron: '0 0 * * *'
+    # Runs at 00:00 UTC every Monday (which is 9:00 AM KST)
+    - cron: '0 0 * * 1'
   workflow_dispatch: # Allows manual trigger from the GitHub Actions tab
 
 jobs:
@@ -12,10 +12,10 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           
