@@ -16,7 +16,7 @@ CATEGORIES = {
     "Gene Editing Tools": '("Saccharomyces cerevisiae" OR "baker\'s yeast") AND ("gene editing" OR "CRISPR" OR "TALEN" OR "ZFN" OR "Cas9")'
 }
 
-def fetch_recent_papers(query, days=2):
+def fetch_recent_papers(query, days=7):
     """
     Fetch papers from Europe PMC for a given query over the past `days` days.
     Europe PMC includes PubMed, PMC, bioRxiv, medRxiv, etc.
@@ -65,8 +65,8 @@ def format_html_email(results_by_category):
         </style>
     </head>
     <body>
-        <h1>🧬 S. cerevisiae Daily Literature Update</h1>
-        <p>Here are the latest papers and preprints regarding S. cerevisiae, categorized by your topics of interest. Collected over the last 48 hours.</p>
+        <h1>🧬 S. cerevisiae Weekly Literature Update</h1>
+        <p>Here are the latest papers and preprints regarding S. cerevisiae, categorized by your topics of interest. Collected over the last 7 days.</p>
     """
     
     total_papers = 0
@@ -120,7 +120,7 @@ def send_email(html_content, total_papers):
         
     msg = MIMEMultipart("alternative")
     today_str = datetime.datetime.now().strftime('%Y-%m-%d')
-    msg["Subject"] = f"[{today_str}] S. cerevisiae Literature Update ({total_papers} new)"
+    msg["Subject"] = f"[{today_str}] S. cerevisiae Weekly Literature Update ({total_papers} new)"
     msg["From"] = sender_email
     msg["To"] = receiver_email
     
